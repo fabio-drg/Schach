@@ -36,7 +36,7 @@ a{color:var(--accent)}
 header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;padding:10px 18px;background:var(--panel);border-bottom:1px solid var(--line)}
 header .logo{font:700 1.25rem "Source Serif 4",Georgia,serif;display:flex;align-items:center;gap:8px;white-space:nowrap}
 header .logo .pc{font-size:1.5rem;color:var(--accent)}
-#menu{display:none;border:1px solid var(--line);background:none;border-radius:8px;padding:4px 10px;font-size:1.2rem;cursor:pointer}
+#menu{display:block;border:1px solid var(--line);background:none;border-radius:8px;padding:4px 10px;font-size:1.2rem;cursor:pointer}
 .prog{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:.85rem;color:var(--muted)}
 .prog-bar{width:140px;height:8px;border-radius:99px;background:var(--line);overflow:hidden}
 #prog-fill{height:100%;background:var(--good);width:0;transition:width .4s}
@@ -153,6 +153,31 @@ svg.arrows{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:60}
 .modal .card{max-width:360px;margin:16px}
 #scrim{display:none}
+/* ---- iPad / Touch ---- */
+html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
+button,a,.sq,.linecard,.bookmove,.botbtn{touch-action:manipulation}
+.board,.board-wrap,button,.nav-l,.mvl,.pstrip,.tabs,header{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.board{touch-action:none}
+body.nav-collapsed .layout{grid-template-columns:1fr}
+body.nav-collapsed aside{display:none}
+.pp-board .board-wrap{max-width:min(100%,calc(100vh - 190px));max-width:min(100%,calc(100dvh - 190px))}
+.lbody.has-w .lwidget .board-wrap{max-width:min(520px,calc(100vh - 300px));max-width:min(520px,calc(100dvh - 300px))}
+.lbody.op .viewer .board-wrap{max-width:min(100%,max(300px,calc(100vh - 405px)));max-width:min(100%,max(300px,calc(100dvh - 405px)))}
+.viewer .v-title{margin-bottom:4px}
+@media (max-height:950px){ .lbody.op .lwidget{position:static} }
+.drag-ghost.touch{transform:scale(1.55);transform-origin:50% 90%}
+@media (max-width:1300px){ .lbody.op .plans{grid-template-columns:1fr} }
+@media (max-width:980px){
+  .playpage .pp-right{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+  .playpage .setup,.playpage .review{grid-column:1/-1}
+  .lbody.op .viewer .board-wrap,.lbody.has-w .lwidget .board-wrap{max-width:min(100%,640px)}
+}
+@media (max-width:980px) and (orientation:portrait){
+  .pp-board .board-wrap{max-width:min(100%,calc(100vh - 440px));max-width:min(100%,calc(100dvh - 440px))}
+}
+@media (max-width:600px){ .playpage .pp-right{grid-template-columns:1fr} .pp-board .board-wrap{max-width:100%} }
+@media (hover:none){ .linecard:hover,.bookmove:hover,.opt:hover,.btn.ghost:hover,.nav-l:hover,.mvl:hover{border-color:inherit;background:inherit} .nav-l.cur:hover{background:var(--accent)} .mvl.cur:hover{background:var(--accent)} }
+
 .board{touch-action:none}
 .drag-ghost{position:absolute;z-index:30;pointer-events:none;display:flex;align-items:center;justify-content:center;line-height:1;transform:scale(1.08)}
 .sq.hover::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 0 .5cqw rgba(255,255,255,.75);z-index:3}
@@ -240,7 +265,8 @@ label.chk{display:flex;align-items:center;gap:6px;font-weight:600;font-size:.9re
 .lc-name{font-weight:700}
 .lc-ok{color:var(--good);font-size:.8rem;font-weight:700;white-space:nowrap}
 .lc-moves{display:block;font-size:.85rem;color:var(--muted);margin-top:2px}
-.lbody.op{grid-template-columns:minmax(0,1fr) minmax(0,500px)}
+.lbody.op{grid-template-columns:minmax(0,1fr) minmax(0,500px);grid-template-areas:'a v' 'l v';row-gap:0}
+.lbody.op .op-a{grid-area:a} .lbody.op .op-v{grid-area:v;align-self:start} .lbody.op .op-l{grid-area:l}
 .lbody.op .lwidget{position:sticky;top:70px}
 .v-title{text-align:center;margin-bottom:8px;font-size:1.05rem}
 .v-row{display:flex;justify-content:center;align-items:center;gap:8px;margin-bottom:6px}
@@ -284,6 +310,7 @@ label.chk{display:flex;align-items:center;gap:6px;font-weight:600;font-size:.9re
 @media (max-width:980px){
   .lbody.has-w,.lbody.play{grid-template-columns:1fr}
   .lbody.has-w .lwidget{order:2}
+  .lbody.op{grid-template-areas:'a' 'v' 'l';row-gap:18px}
 }
 @media (max-width:820px){
   #menu{display:block}
@@ -827,7 +854,8 @@ class Board {
     ghost.style.width = sqRect.width + 'px'; ghost.style.height = sqRect.height + 'px'; ghost.style.fontSize = (sqRect.width * 0.85) + 'px';
     ghost.style.display = 'none';
     this.el.appendChild(ghost);
-    this.drag = { sq, ghost, pcEl, moved: false, wasSel, x0: e.clientX, y0: e.clientY, w: sqRect.width };
+    this.drag = { sq, ghost, pcEl, moved: false, wasSel, x0: e.clientX, y0: e.clientY, w: sqRect.width, touch: e.pointerType === 'touch' };
+    if (this.drag.touch) ghost.classList.add('touch');
     window.addEventListener('pointermove', this._mv); window.addEventListener('pointerup', this._up); window.addEventListener('pointercancel', this._up);
   }
   dragMove(e) {
@@ -835,7 +863,7 @@ class Board {
     if (!d.moved && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) > 5) { d.moved = true; d.ghost.style.display = ''; d.pcEl.style.opacity = '0.3'; }
     if (!d.moved) return;
     const r = this.el.getBoundingClientRect();
-    d.ghost.style.left = (e.clientX - r.left - d.w / 2) + 'px'; d.ghost.style.top = (e.clientY - r.top - d.w / 2) + 'px';
+    d.ghost.style.left = (e.clientX - r.left - d.w / 2) + 'px'; d.ghost.style.top = (e.clientY - r.top - d.w / 2 - (d.touch ? d.w * 0.6 : 0)) + 'px';
     const to = this.sqFromPoint(e.clientX, e.clientY);
     $$('.sq.hover', this.bEl).forEach(x => x.classList.remove('hover'));
     if (to >= 0) { const s = this.bEl.querySelector(`[data-sq="${to}"]`); s && s.classList.add('hover'); }
@@ -2075,12 +2103,12 @@ function openOpening(id) {
       b.dataset.key = l.key;
       const prev = l.moves.slice(0, 8).map((x, i) => (i % 2 ? '' : (i / 2 + 1) + '.') + x.san).join(' ') + (l.moves.length > 8 ? ' …' : '');
       b.innerHTML = `<span class="lc-top"><span class="lc-name">${l.kind === 'trap' ? '⚠️ ' : ''}${l.name}</span><span class="lc-ok">${progress[opKey(o, l)] ? '✓ geübt' : ''}</span></span><span class="lc-moves">${prev}</span>`;
-      b.onclick = () => { current = l; $$('.linecard', lineList).forEach(x => x.classList.toggle('cur', x.dataset.key === l.key)); showViewer(); if (window.innerWidth < 980) right.scrollIntoView({ behavior: 'smooth' }); };
+      b.onclick = () => { current = l; $$('.linecard', lineList).forEach(x => x.classList.toggle('cur', x.dataset.key === l.key)); showViewer(); const rr = right.getBoundingClientRect(); if (rr.top < 0 || rr.bottom > window.innerHeight) right.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
       lineList.appendChild(b);
     });
   }
-  left.appendChild(lineList);
-  body.append(left, right);
+  left.classList.add('op-a'); right.classList.add('op-v'); lineList.classList.add('op-l', 'prose');
+  body.append(left, right, lineList);
   main.appendChild(body);
   function showViewer() { right.innerHTML = ''; lineViewer(right, o, current, () => { $$('.linecard', lineList).forEach(x => { const l = o.lines.find(y => y.key === x.dataset.key); $('.lc-ok', x).textContent = progress[opKey(o, l)] ? '✓ geübt' : ''; }); renderNav(); }); }
   showViewer();
@@ -2101,7 +2129,7 @@ function lineViewer(host, o, line, onTrained) {
   bar.append(b0, bp, bn, be, bf);
   const ml = h('div', 'v-moves');
   const playB = h('button', 'btn ghost small-btn', '♞ Ab Ende dieser Linie gegen den Computer spielen');
-  wrap.append(title, h('div', 'v-row', ''), status, bd, note, bar, ml, playB);
+  wrap.append(title, h('div', 'v-row', ''), status, bd, bar, note, ml, playB);
   $$('.v-row', wrap)[0].appendChild(modeSeg); wrap.insertBefore(sideRow, status);
   host.appendChild(wrap);
 
@@ -3081,7 +3109,7 @@ function updateLessonDone(l) {
 
 let curLesson = null, curStep = 0;
 
-let curMode = 'op', curRoute = '';
+let curMode = 'op', curRoute = '', manualCollapse = false;
 function renderNav() {
   $$('.tabs a').forEach(t => t.classList.toggle('on', t.dataset.mode === curMode && (curMode !== 'op' || (t.dataset.r === 'explorer') === (curRoute === 'explorer'))));
   if (curMode === 'kurs') renderKursNav(); else renderOpNav();
@@ -3167,6 +3195,8 @@ function route() {
   const step = pendingStep; pendingStep = 0;
   if (playCleanup && id !== 'spielen') { playCleanup(); playCleanup = null; }
   document.body.classList.remove('nav-open');
+  if (id === 'spielen' && window.innerWidth < 1400) document.body.classList.add('nav-collapsed');
+  else if (!manualCollapse) document.body.classList.remove('nav-collapsed');
   if (id === 'spielen') return openPlay();
   const l = FLAT.find(x => x.id === id);
   if (l) return openLesson(l, step);
@@ -3186,7 +3216,10 @@ function toast(msg) {
 
 let playCleanup = null;
 // ---------- Start ----------
-$('#menu').onclick = () => document.body.classList.toggle('nav-open');
+$('#menu').onclick = () => {
+  if (window.innerWidth <= 820) document.body.classList.toggle('nav-open');
+  else { manualCollapse = !document.body.classList.contains('nav-collapsed'); document.body.classList.toggle('nav-collapsed'); }
+};
 $('#scrim').onclick = () => document.body.classList.remove('nav-open');
 $('#reset').onclick = () => {
   const box = $('#confirm'); box.classList.remove('hidden');
