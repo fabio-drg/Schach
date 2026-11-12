@@ -1,5 +1,5 @@
 // Offline-Speicher für die Schach-App
-const VERSION = 'schach-v2';
+const VERSION = 'schach-v3';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
